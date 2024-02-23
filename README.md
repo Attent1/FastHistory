@@ -8,7 +8,6 @@ Controle de winrate do LOL
     - [Apagar](#apagar-campeao)
     - [Editar](#editar-campeao)
 
-
 ### Listar Todos
 `GET` /campeao
 
