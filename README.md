@@ -19,7 +19,15 @@ Retorna um array com todos os campeões cadastrados
     {
         "id": 1,
         "nome": "Jinx",
-        "funcao": "Atirador"
+        "funcao": "Atirador",
+        "rota": "Ad Carry"                
+    },
+        
+    {
+        "id": 2,
+        "nome": "Zed",
+        "funcao": "Assassino",
+        "rota": "Mid"                
     }
 ]
 ```
@@ -29,7 +37,6 @@ Retorna um array com todos os campeões cadastrados
 | código | descrição |
 |--------:|-----------|
 | 200    | dados retornados com sucesso |
-| 404    | ID do campeão não encontrado |
 
 
 ### Cadastrar
@@ -38,18 +45,33 @@ Retorna um array com todos os campeões cadastrados
 
 Insere um novo campeão
 
-**Corpo da requisição**
-
 |campo|tipo|obrigatório|descrição
 |-----|----|-----------:|---------
 |nome |string|✅| nome do campeão
 |funcao|string|✅|função do campeão
+|rota|string|✅|rota do campeão
+
+**Corpo da requisição**
 
 ```js
 
     {
         "nome": "Jinx",
-        "funcao": "Atirador"
+        "funcao": "Atirador",
+        "rota": "Ad Carry"
+    }
+
+```
+
+**Exemplo de resposta**
+
+```js
+
+    {
+        "id": 1,
+        "nome": "Jinx",
+        "funcao": "Atirador",
+        "rota": "Ad Carry"
     }
 
 ```
@@ -88,7 +110,8 @@ atualiza os dados do campeão com o `id` informado.
 
     {
         "nome": "Jinx",
-        "funcao": "Atirador"
+        "funcao": "Lutador",
+        "rota": "Top"        
     }
 
 ```
@@ -99,7 +122,8 @@ atualiza os dados do campeão com o `id` informado.
     {
         "id": 1,
         "nome": "Jinx",
-        "funcao": "Atirador"
+        "funcao": "Lutador",
+        "rota": "Top"
     }
 ]
 ```
