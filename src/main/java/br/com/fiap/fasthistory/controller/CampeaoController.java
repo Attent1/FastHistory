@@ -10,8 +10,12 @@ public class CampeaoController {
     
     @RequestMapping(method = RequestMethod.GET , path = "/campeao", produces = "application/json")
     @ResponseBody
-    public String listarCampeao(){
-        return "Lista de campeões";
-    } 
+    public String[] listarCampeao(){
+        String[] campeoes = new String[3];
+            campeoes[0] = "Jinx";
+            campeoes[1] = "Zed";
+            campeoes[2] = "Sylas";
+            return campeoes;
+    }
 
 }
