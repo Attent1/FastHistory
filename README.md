@@ -1,5 +1,5 @@
 # FastHistory
-Controle de winrate do LOL
+Controle de Win Rate de League of Legends
 
 ## Endpoints
 - Campeöes 
