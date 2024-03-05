@@ -2,6 +2,7 @@ package br.com.fiap.fasthistory.controller;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,40 +21,65 @@ public class CampeaoController {
     
     Logger log = LoggerFactory.getLogger(getClass());
 
-    List<Campeao> repository = new ArrayList<>();
+    List<Campeao> campeoes = new ArrayList<>();
 
     @RequestMapping(method = RequestMethod.GET , path = "/campeao")
     @ResponseBody
-    public List<Campeao> listarCampeao(){        
-        return repository;
+    public List<Campeao> listarTodos(){        
+        return campeoes;
     }
 
     @RequestMapping(method = RequestMethod.POST , path = "/campeao")
+    @ResponseBody    
+    public ResponseEntity<Campeao> cadastrar(@RequestBody Campeao vobjCampeao){        
+        log.info("cadastrando campeão: {}", vobjCampeao);
+        campeoes.add(vobjCampeao);
+        return ResponseEntity.status(201).body(vobjCampeao);
+    }
+    
+    private Optional<Campeao> getCampeaoPorId(Long id) {
+        var campeao = campeoes
+                .stream()
+                .filter(c -> c.id().equals(id))
+                .findFirst();                
+        return campeao;
+    }
+    
+    @RequestMapping(method = RequestMethod.DELETE , path = "/campeao/{id}")
     @ResponseBody
-    //@ResponseStatus(code = HttpStatus.CREATED)
-    public ResponseEntity<Campeao> create(@RequestBody Campeao campeao){        
-        log.info("cadastrando campeão: {}", campeao);
-        repository.add(campeao);
-        return ResponseEntity.status(201).body(campeao);
+    public ResponseEntity<Object> apagar(@PathVariable Long id){
+        log.info("Deletando campeão com id: {}", id);
+        
+        var campeao = getCampeaoPorId(id);        
+
+        if (campeao.isEmpty()) 
+            return ResponseEntity.notFound().build();
+              
+        campeoes.remove(campeao.get());        
+
+        log.info("Campeão de {} id deletado", id);
+
+        return ResponseEntity.noContent().build();
     }
 
-    //só fazendo para ter de exemplo
-    @RequestMapping(method = RequestMethod.GET , path = "/campeao/{id}")
+    @RequestMapping(method = RequestMethod.PUT , path = "/campeao/{id}")
     @ResponseBody
-    public ResponseEntity<Campeao> getCampeao(@PathVariable Long id){
-        log.info("buscando campeão com id: {}", id);
+    public ResponseEntity<Object> editar(@PathVariable Long id, @RequestBody Campeao vobjCampeao){
+        log.info("Atualizando campeão com id: {}", id);
+        
+        var campeao = getCampeaoPorId(id);        
 
-        //stream
-        var campeao = repository.stream()
-                                                 .filter(c -> c.id()
-                                                 .equals(id))
-                                                 .findFirst();
+        if (campeao.isEmpty()) 
+            return ResponseEntity.notFound().build();
+              
+        var campeaoAtualizado = new Campeao(id, vobjCampeao.nome(), vobjCampeao.funcao(), vobjCampeao.rota());
 
-        if (campeao.isEmpty()) { 
-            return ResponseEntity.status(404).build();
-        }
+        campeoes.remove(campeao.get());
+        campeoes.add(campeaoAtualizado);
 
-        return ResponseEntity.status(200).body(campeao.get());
+        log.info("Campeão de {} id atualizado", id);
+
+        return ResponseEntity.ok().body(campeaoAtualizado);
     }
         
 }
