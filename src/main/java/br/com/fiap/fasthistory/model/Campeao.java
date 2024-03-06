@@ -3,6 +3,7 @@ package br.com.fiap.fasthistory.model;
 import java.util.Random;
 
 public record Campeao(Long id, String nome, String funcao, String rota) {
+    //imutável
 
     public Campeao(Long id, String nome, String funcao, String rota){
         var key = (id != null) ? id : Math.abs(new Random().nextLong());
