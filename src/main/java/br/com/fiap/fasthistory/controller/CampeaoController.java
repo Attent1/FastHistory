@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import br.com.fiap.fasthistory.model.Campeao;
+import br.com.fiap.fasthistory.repository.CampeaoRepository;
 
 @RestController
 @RequestMapping("campeao")
@@ -25,61 +27,64 @@ public class CampeaoController {
     
     Logger log = LoggerFactory.getLogger(getClass());
 
-    List<Campeao> campeoes = new ArrayList<>();
-
+    //List<Campeao> campeoes = new ArrayList<>();
+    
+    @Autowired // CDI Injeção de Dependência
+    CampeaoRepository repository;
+ 
     @GetMapping   
     public List<Campeao> listarTodos(){        
-        return campeoes;
+        return repository.findAll();
     }
 
-    @PostMapping
-    public ResponseEntity<Campeao> cadastrar(@RequestBody Campeao vobjCampeao){        
-        log.info("cadastrando campeão: {}", vobjCampeao);
-        campeoes.add(vobjCampeao);
-        return ResponseEntity.status(HttpStatus.CREATED).body(vobjCampeao);
-    }
+    // @PostMapping
+    // public ResponseEntity<Campeao> cadastrar(@RequestBody Campeao vobjCampeao){        
+    //     log.info("cadastrando campeão: {}", vobjCampeao);
+    //     campeoes.add(vobjCampeao);
+    //     return ResponseEntity.status(HttpStatus.CREATED).body(vobjCampeao);
+    // }
     
-    private Optional<Campeao> getCampeaoPorId(Long id) {
-        var campeao = campeoes
-                .stream()
-                .filter(c -> c.id().equals(id))
-                .findFirst();                
-        return campeao;
-    }
+    // private Optional<Campeao> getCampeaoPorId(Long id) {
+    //     var campeao = campeoes
+    //             .stream()
+    //             .filter(c -> c.id().equals(id))
+    //             .findFirst();                
+    //     return campeao;
+    // }
     
-    @DeleteMapping("{id}")
-    public ResponseEntity<Object> apagar(@PathVariable Long id){
-        log.info("Deletando campeão com id: {}", id);
+    // @DeleteMapping("{id}")
+    // public ResponseEntity<Object> apagar(@PathVariable Long id){
+    //     log.info("Deletando campeão com id: {}", id);
         
-        var campeao = getCampeaoPorId(id);        
+    //     var campeao = getCampeaoPorId(id);        
 
-        if (campeao.isEmpty()) 
-            return ResponseEntity.notFound().build();
+    //     if (campeao.isEmpty()) 
+    //         return ResponseEntity.notFound().build();
               
-        campeoes.remove(campeao.get());        
+    //     campeoes.remove(campeao.get());        
 
-        log.info("Campeão de {} id deletado", id);
+    //     log.info("Campeão de {} id deletado", id);
 
-        return ResponseEntity.noContent().build();
-    }
+    //     return ResponseEntity.noContent().build();
+    // }
 
-    @PutMapping("{id}")
-    public ResponseEntity<Object> editar(@PathVariable Long id, @RequestBody Campeao vobjCampeao){
-        log.info("Atualizando campeão com id: {}", id);
+    // @PutMapping("{id}")
+    // public ResponseEntity<Object> editar(@PathVariable Long id, @RequestBody Campeao vobjCampeao){
+    //     log.info("Atualizando campeão com id: {}", id);
         
-        var campeao = getCampeaoPorId(id);        
+    //     var campeao = getCampeaoPorId(id);        
 
-        if (campeao.isEmpty()) 
-            return ResponseEntity.notFound().build();
+    //     if (campeao.isEmpty()) 
+    //         return ResponseEntity.notFound().build();
               
-        var campeaoAtualizado = new Campeao(id, vobjCampeao.nome(), vobjCampeao.funcao(), vobjCampeao.rota());
+    //     var campeaoAtualizado = new Campeao(id, vobjCampeao.nome(), vobjCampeao.funcao(), vobjCampeao.rota());
 
-        campeoes.remove(campeao.get());
-        campeoes.add(campeaoAtualizado);
+    //     campeoes.remove(campeao.get());
+    //     campeoes.add(campeaoAtualizado);
 
-        log.info("Campeão de {} id atualizado", id);
+    //     log.info("Campeão de {} id atualizado", id);
 
-        return ResponseEntity.ok(campeaoAtualizado);
-    }
+    //     return ResponseEntity.ok(campeaoAtualizado);
+    // }
         
 }
