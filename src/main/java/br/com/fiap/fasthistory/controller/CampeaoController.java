@@ -1,13 +1,14 @@
 package br.com.fiap.fasthistory.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+//importa o atributo static CREATED da classe HttpStatus
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.HttpStatus.NOT_FOUND; 
+import static org.springframework.http.HttpStatus.NO_CONTENT;
+import static org.springframework.http.HttpStatus.OK;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,18 +17,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.fasthistory.model.Campeao;
 import br.com.fiap.fasthistory.repository.CampeaoRepository;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("campeao")
+@Slf4j
 public class CampeaoController {
-    
-    Logger log = LoggerFactory.getLogger(getClass());
-
-    //List<Campeao> campeoes = new ArrayList<>();
     
     @Autowired // CDI Injeção de Dependência
     CampeaoRepository repository;
@@ -37,13 +38,33 @@ public class CampeaoController {
         return repository.findAll();
     }
 
-    // @PostMapping
-    // public ResponseEntity<Campeao> cadastrar(@RequestBody Campeao vobjCampeao){        
-    //     log.info("cadastrando campeão: {}", vobjCampeao);
-    //     campeoes.add(vobjCampeao);
-    //     return ResponseEntity.status(HttpStatus.CREATED).body(vobjCampeao);
-    // }
+    @PostMapping
+    @ResponseStatus(CREATED)
+    public Campeao cadastrar(@RequestBody Campeao vobjCampeao){        
+        log.info("cadastrando campeão: {}", vobjCampeao);
+        return repository.save(vobjCampeao);        
+    }
     
+    @GetMapping("{id}")
+    public ResponseEntity<Campeao> get(@PathVariable Long id){
+        log.info("Buscando campeão com id: {}", id);
+        
+        return repository
+                    .findById(id)
+                    .map(ResponseEntity::ok) //rerence method 
+                    .orElse(ResponseEntity.notFound().build());
+                        //.map(c -> ResponseEntity.ok(c)) convertendo o resultado do findById 'c' 
+                        //para oq esta dentro do paramentro da função map
+
+        ////Código antes de refatorar                         
+        // var campeao = repository.findById(id);        
+
+        // if (campeao.isEmpty()) 
+        //     return ResponseEntity.notFound().build();
+                              
+        // return ResponseEntity.ok(campeao.get());
+    }
+
     // private Optional<Campeao> getCampeaoPorId(Long id) {
     //     var campeao = campeoes
     //             .stream()
@@ -52,39 +73,36 @@ public class CampeaoController {
     //     return campeao;
     // }
     
-    // @DeleteMapping("{id}")
-    // public ResponseEntity<Object> apagar(@PathVariable Long id){
-    //     log.info("Deletando campeão com id: {}", id);
+    @DeleteMapping("{id}")
+    @ResponseStatus(NO_CONTENT)
+    public void apagar(@PathVariable Long id){
+        log.info("Deletando campeão com id: {}", id);
+        verificarSeExisteCampeao(id);
+        repository.deleteById(id);        
+    }
+
+    @PutMapping("{id}")
+    @ResponseStatus(OK)
+    public Campeao editar(@PathVariable Long id, @RequestBody Campeao campeao){
+        log.info("Atualizando campeão com id: {}", id);
         
-    //     var campeao = getCampeaoPorId(id);        
+        verificarSeExisteCampeao(id);                  
+        campeao.setId(id); 
 
-    //     if (campeao.isEmpty()) 
-    //         return ResponseEntity.notFound().build();
-              
-    //     campeoes.remove(campeao.get());        
+        ////Código antes de refatorar 
+        // BeanUtils.copyProperties(campeao, campeaoAtualizado);
 
-    //     log.info("Campeão de {} id deletado", id);
-
-    //     return ResponseEntity.noContent().build();
-    // }
-
-    // @PutMapping("{id}")
-    // public ResponseEntity<Object> editar(@PathVariable Long id, @RequestBody Campeao vobjCampeao){
-    //     log.info("Atualizando campeão com id: {}", id);
+        // campeaoAtualizado.setId(id);
+        // campeaoAtualizado.setNome(campeao.getNome());
+        // campeaoAtualizado.setFuncao(campeao.getFuncao());
+        // campeaoAtualizado.setRota(campeao.getRota());
         
-    //     var campeao = getCampeaoPorId(id);        
+        return repository.save(campeao);
+    }
 
-    //     if (campeao.isEmpty()) 
-    //         return ResponseEntity.notFound().build();
-              
-    //     var campeaoAtualizado = new Campeao(id, vobjCampeao.nome(), vobjCampeao.funcao(), vobjCampeao.rota());
-
-    //     campeoes.remove(campeao.get());
-    //     campeoes.add(campeaoAtualizado);
-
-    //     log.info("Campeão de {} id atualizado", id);
-
-    //     return ResponseEntity.ok(campeaoAtualizado);
-    // }
+    private void verificarSeExisteCampeao(Long id) {
+        repository.findById(id)
+                  .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Campeão não encontrado"));
+    }
         
 }
