@@ -1,5 +1,6 @@
 package br.com.fiap.fasthistory.controller;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -34,6 +35,9 @@ public class PartidaController {
     @PostMapping
     @ResponseStatus(CREATED)
     public Partida create(@RequestBody @Valid Partida partida) {        
+        Float kda;
+        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath(); 
+        partida.setKda(kda);
         return repository.save(partida);   
     }
     

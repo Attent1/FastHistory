@@ -1,7 +1,6 @@
 package br.com.fiap.fasthistory.model;
 
-import java.math.BigDecimal;
-
+import br.com.fiap.fasthistory.validation.Resultado;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,17 +20,16 @@ public class Partida {
     private Long idCampeao;
     
     @Min(0)
-    private int kill;
+    private float kill;
     @Min(0)
-    private int death;
+    private float death;
     @Min(0)
-    private int assist;
+    private float assist;
 
-    private BigDecimal kda;
+    private float kda;
 
-    @NotBlank @Size(min = 3, max = 7)
-    
-    //@Resultado
+    @NotBlank(message = "{partida.resultado.notblank}") @Size(min = 3, max = 7)    
+    @Resultado() 
     private String resultado; // VITÓRIA | DERROTA
 
 }
