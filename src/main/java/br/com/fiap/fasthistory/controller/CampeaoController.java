@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.fasthistory.model.Campeao;
 import br.com.fiap.fasthistory.repository.CampeaoRepository;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
@@ -40,7 +41,7 @@ public class CampeaoController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    public Campeao cadastrar(@RequestBody Campeao vobjCampeao){        
+    public Campeao cadastrar(@RequestBody @Valid Campeao vobjCampeao){        
         log.info("cadastrando campeão: {}", vobjCampeao);
         return repository.save(vobjCampeao);        
     }
