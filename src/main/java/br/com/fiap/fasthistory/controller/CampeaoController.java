@@ -46,6 +46,12 @@ public class CampeaoController {
         return repository.save(vobjCampeao);        
     }
     
+    @GetMapping("/nome/{id}")   
+    public String getNomeCampeao(@PathVariable Long id){        
+        var campeao = repository.findById(id);
+        return campeao.get().getNome();
+    }
+
     @GetMapping("{id}")
     public ResponseEntity<Campeao> get(@PathVariable Long id){
         log.info("Buscando campeão com id: {}", id);
