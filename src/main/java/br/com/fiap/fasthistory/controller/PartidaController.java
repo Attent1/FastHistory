@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import br.com.fiap.fasthistory.DTOs.PartidaDTO;
 import br.com.fiap.fasthistory.model.Partida;
 import br.com.fiap.fasthistory.repository.PartidaRepository;
 import jakarta.validation.Valid;
@@ -27,11 +28,16 @@ public class PartidaController {
     @Autowired
     PartidaRepository repository;
 
-    @GetMapping   
-    public List<Partida> listarTodos(){        
-        return repository.findAll();
-    }
+    // @GetMapping   
+    // public List<Partida> listarTodos(){        
+    //     return repository.findAll();
+    // }
 
+    @GetMapping   
+    public List<PartidaDTO> listarTodos(){        
+        return repository.findPartidasNomeCampeao();
+    }
+    
     @PostMapping
     @ResponseStatus(CREATED)
     public Partida create(@RequestBody @Valid Partida partida) {        
