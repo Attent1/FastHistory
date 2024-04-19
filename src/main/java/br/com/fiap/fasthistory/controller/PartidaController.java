@@ -42,7 +42,7 @@ public class PartidaController {
     @ResponseStatus(CREATED)
     public Partida create(@RequestBody @Valid Partida partida) {        
         Float kda;
-        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath(); 
+        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();         
         partida.setKda(kda);
         return repository.save(partida);   
     }

@@ -46,10 +46,9 @@ public class CampeaoController {
         return repository.save(vobjCampeao);        
     }
     
-    @GetMapping("/nome/{id}")   
-    public String getNomeCampeao(@PathVariable Long id){        
-        var campeao = repository.findById(id);
-        return campeao.get().getNome();
+    @GetMapping("/nome/{nomeCampeao}")   
+    public String getIdCampeao(@PathVariable String nomeCampeao){                
+        return repository.getIdCampeao(nomeCampeao);
     }
 
     @GetMapping("{id}")
