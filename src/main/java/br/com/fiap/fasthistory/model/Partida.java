@@ -1,18 +1,28 @@
 package br.com.fiap.fasthistory.model;
 
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import br.com.fiap.fasthistory.validation.Resultado;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
-
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor 
 public class Partida {
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,6 +42,11 @@ public class Partida {
     @Resultado() 
     private String resultado; // VITÓRIA | DERROTA
 
+    @ManyToOne
+    private Campeao campeao;
+
+    // @JsonFormat(pattern = "dd/mm/yyyy")
+    // private LocalDate dataInclusao;
 }
 
 
