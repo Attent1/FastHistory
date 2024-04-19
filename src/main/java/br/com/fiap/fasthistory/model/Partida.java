@@ -27,7 +27,6 @@ public class Partida {
 
     @Id @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private Long idCampeao;
     
     @Min(0)
     private float kill;

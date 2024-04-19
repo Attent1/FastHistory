@@ -40,8 +40,7 @@ public class DatabaseSeeder implements CommandLineRunner{
                     .death(6f)
                     .kda(3f)
                     .campeao(campeaoRepository.findById(1l).get())
-                    .resultado("DERROTA")
-                    .idCampeao(1l).build()  
+                    .resultado("DERROTA").build() 
             )
         );
 
