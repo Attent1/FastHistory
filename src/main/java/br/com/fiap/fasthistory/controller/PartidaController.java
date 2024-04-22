@@ -72,9 +72,11 @@ public class PartidaController {
     @PutMapping("{id}")
     @ResponseStatus(OK)
     public Partida editar(@PathVariable Long id, @RequestBody Partida partida){
-        log.info("Atualizando partida com id: {}", id);
-        
+        log.info("Atualizando partida com id: {}", id);        
         verificarSeExistePartida(id);                  
+        Float kda;
+        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();         
+        partida.setKda(kda);
         partida.setId(id);    
         return repository.save(partida);
     }
