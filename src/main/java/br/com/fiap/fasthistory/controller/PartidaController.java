@@ -1,13 +1,15 @@
 package br.com.fiap.fasthistory.controller;
 
-import java.util.List;
-
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.NOT_FOUND; 
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,12 +38,22 @@ public class PartidaController {
     PartidaRepository repository;
      
     @GetMapping   
-    public List<Partida> listarTodos(@RequestParam(required = false) String campeao){        
-        log.info("buscar: " + campeao);
+    public Page<Partida> listarTodos(@RequestParam(required = false) String campeao,
+                                     @RequestParam(required = false) Integer mes,                                     
+                                     @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable){               
+
+        // if (mes != null && campeao != null) {
+        //     return repository.findByCampeaoNomeAndMes(campeao, mes, pageable);
+            
+        // }
+                                        
         if (campeao != null) {
-            return repository.findByCampeaoNome(campeao);
+            return repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
         }
-        return repository.findAll();
+        // if (mes != 0) {
+        //     return repository.findByMes(mes, pageable);
+        // }
+        return repository.findAll(pageable);
     }
     
     @PostMapping
