@@ -41,11 +41,13 @@ public class Partida {
     @Resultado() 
     private String resultado; // VITÓRIA | DERROTA
 
-    @ManyToOne
-    private Campeao campeao;
+    @JsonFormat(pattern="dd/MM/yyyy")
+    @Builder.Default
+    private LocalDate dataInclusao = LocalDate.now();
 
-    // @JsonFormat(pattern = "dd/mm/yyyy")
-    // private LocalDate dataInclusao;
+    @ManyToOne
+    private Campeao campeao;    
+    
 }
 
 

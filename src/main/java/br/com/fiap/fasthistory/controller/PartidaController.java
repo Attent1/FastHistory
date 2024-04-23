@@ -85,7 +85,8 @@ public class PartidaController {
     @ResponseStatus(OK)
     public Partida editar(@PathVariable Long id, @RequestBody Partida partida){
         log.info("Atualizando partida com id: {}", id);        
-        verificarSeExistePartida(id);                  
+        verificarSeExistePartida(id);   
+        System.out.println(partida.getDataInclusao());               
         Float kda;
         kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();         
         partida.setKda(kda);

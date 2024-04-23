@@ -1,6 +1,7 @@
 package br.com.fiap.fasthistory.config;
 
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,7 @@ public class DatabaseSeeder implements CommandLineRunner{
                     .death(6f)
                     .kda(3f)
                     .campeao(campeaoRepository.findById(1l).get())
+                    .dataInclusao(LocalDate.now().minusDays(15))
                     .resultado("DERROTA").build(),
                     Partida.builder()
                     .id(2l)
