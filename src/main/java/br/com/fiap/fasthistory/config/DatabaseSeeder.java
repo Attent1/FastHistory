@@ -50,6 +50,7 @@ public class DatabaseSeeder implements CommandLineRunner{
                     .death(6f)
                     .kda(3f)
                     .campeao(campeaoRepository.findById(2l).get())
+                    .dataInclusao(LocalDate.now().minusDays(30))
                     .resultado("DERROTA").build(),
                     Partida.builder()
                     .id(3l)
@@ -57,6 +58,7 @@ public class DatabaseSeeder implements CommandLineRunner{
                     .assist(4f)
                     .death(6f)
                     .kda(3f)
+                    .dataInclusao(LocalDate.now().minusDays(45))
                     .campeao(campeaoRepository.findById(3l).get())
                     .resultado("DERROTA").build()
             )
