@@ -1,9 +1,13 @@
 package br.com.fiap.fasthistory.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND; 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,75 +32,98 @@ import br.com.fiap.fasthistory.repository.PartidaRepository;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
-
 @RestController
 @RequestMapping("partida")
 @Slf4j
 public class PartidaController {
-    
+
+    record TotalPorCampeao(String campeao, Float kill) {
+    }
+
     @Autowired
     PartidaRepository repository;
-     
-    @GetMapping   
+
+    @GetMapping
     public Page<Partida> listarTodos(@RequestParam(required = false) String campeao,
-                                     @RequestParam(required = false) Integer mes,                                     
-                                     @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable){               
+            @RequestParam(required = false) Integer mes,
+            @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
 
         // if (mes != null && campeao != null) {
-        //     return repository.findByCampeaoNomeAndMes(campeao, mes, pageable);
-            
+        // return repository.findByCampeaoNomeAndMes(campeao, mes, pageable);
+
         // }
-                                        
+
         if (campeao != null) {
             return repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
         }
         // if (mes != 0) {
-        //     return repository.findByMes(mes, pageable);
+        // return repository.findByMes(mes, pageable);
         // }
         return repository.findAll(pageable);
     }
-    
+
+    @GetMapping("todos-kda-campeao")
+    public List<TotalPorCampeao> getKdaPorCampeao() {
+
+        var partidas = repository.findAll();
+
+        Map<String, Double> collect = partidas.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getCampeao().getNome(),
+                        Collectors.summingDouble(Partida::getKill) // Correção para float
+                ));
+
+        log.info(collect + "aaa");
+
+        return collect
+                .entrySet()
+                .stream()
+                .map(e -> new TotalPorCampeao(e.getKey(), e.getValue().floatValue())) // Converter para float
+                .collect(Collectors.toList());
+
+    }
+
     @PostMapping
     @ResponseStatus(CREATED)
-    public Partida create(@RequestBody @Valid Partida partida) {        
+    public Partida create(@RequestBody @Valid Partida partida) {
         Float kda;
-        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();         
+        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();
         partida.setKda(kda);
-        return repository.save(partida);   
+        return repository.save(partida);
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<Partida> get(@PathVariable Long id){                
+    public ResponseEntity<Partida> get(@PathVariable Long id) {
         return repository
-                    .findById(id)
-                    .map(ResponseEntity::ok) 
-                    .orElse(ResponseEntity.notFound().build());
+                .findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
-    public void apagar(@PathVariable Long id){
+    public void apagar(@PathVariable Long id) {
         log.info("Deletando partida com id: {}", id);
         verificarSeExistePartida(id);
-        repository.deleteById(id);        
+        repository.deleteById(id);
     }
 
     @PutMapping("{id}")
     @ResponseStatus(OK)
-    public Partida editar(@PathVariable Long id, @RequestBody Partida partida){
-        log.info("Atualizando partida com id: {}", id);        
-        verificarSeExistePartida(id);   
-        System.out.println(partida.getDataInclusao());               
+    public Partida editar(@PathVariable Long id, @RequestBody Partida partida) {
+        log.info("Atualizando partida com id: {}", id);
+        verificarSeExistePartida(id);
+        System.out.println(partida.getDataInclusao());
         Float kda;
-        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();         
+        kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();
         partida.setKda(kda);
-        partida.setId(id);    
+        partida.setId(id);
         return repository.save(partida);
     }
 
     private void verificarSeExistePartida(Long id) {
         repository.findById(id)
-                  .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Partida não encontrada"));
+                .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Partida não encontrada"));
     }
-    
+
 }

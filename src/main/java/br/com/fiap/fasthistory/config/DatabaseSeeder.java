@@ -36,13 +36,13 @@ public class DatabaseSeeder implements CommandLineRunner{
             List.of(
                     Partida.builder()
                     .id(1l)
-                    .kill(11f)
+                    .kill(8f)
                     .assist(4f)
-                    .death(6f)
+                    .death(3f)
                     .kda(3f)
                     .campeao(campeaoRepository.findById(1l).get())
                     .dataInclusao(LocalDate.now().minusDays(15))
-                    .resultado("DERROTA").build(),
+                    .resultado("VITÓRIA").build(),
                     Partida.builder()
                     .id(2l)
                     .kill(11f)
@@ -54,9 +54,9 @@ public class DatabaseSeeder implements CommandLineRunner{
                     .resultado("DERROTA").build(),
                     Partida.builder()
                     .id(3l)
-                    .kill(11f)
-                    .assist(4f)
-                    .death(6f)
+                    .kill(5f)
+                    .assist(3f)
+                    .death(7f)
                     .kda(3f)
                     .dataInclusao(LocalDate.now().minusDays(45))
                     .campeao(campeaoRepository.findById(3l).get())
