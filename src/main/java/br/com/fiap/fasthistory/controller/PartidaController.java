@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PartidaController {
 
-    record TotalPorCampeao(String campeao, Float kill) {
+    record TotalPorCampeao(String campeao, Float kda) {
     }
 
     @Autowired
@@ -45,20 +45,12 @@ public class PartidaController {
 
     @GetMapping
     public Page<Partida> listarTodos(@RequestParam(required = false) String campeao,
-            @RequestParam(required = false) Integer mes,
             @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
-
-        // if (mes != null && campeao != null) {
-        // return repository.findByCampeaoNomeAndMes(campeao, mes, pageable);
-
-        // }
 
         if (campeao != null) {
             return repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
         }
-        // if (mes != 0) {
-        // return repository.findByMes(mes, pageable);
-        // }
+        
         return repository.findAll(pageable);
     }
 
@@ -70,17 +62,14 @@ public class PartidaController {
         Map<String, Double> collect = partidas.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getCampeao().getNome(),
-                        Collectors.summingDouble(Partida::getKill) // Correção para float
+                        Collectors.summingDouble(p -> ((double)(p.getKill() + p.getAssist())) / p.getDeath()) // Correção para float
                 ));
-
-        log.info(collect + "aaa");
 
         return collect
                 .entrySet()
                 .stream()
                 .map(e -> new TotalPorCampeao(e.getKey(), e.getValue().floatValue())) // Converter para float
                 .collect(Collectors.toList());
-
     }
 
     @PostMapping

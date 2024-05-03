@@ -2,13 +2,16 @@ package br.com.fiap.fasthistory.controller;
 
 //importa o atributo static CREATED da classe HttpStatus
 import static org.springframework.http.HttpStatus.CREATED;
-import static org.springframework.http.HttpStatus.NOT_FOUND; 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,18 +32,21 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("campeao")
 @Slf4j
+@CacheConfig(cacheNames = "campeoes")
 public class CampeaoController {
     
     @Autowired // CDI Injeção de Dependência
     CampeaoRepository repository;
  
     @GetMapping   
+    @Cacheable
     public List<Campeao> listarTodos(){        
         return repository.findAll();
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
+    @CacheEvict(allEntries = true)
     public Campeao cadastrar(@RequestBody @Valid Campeao vobjCampeao){        
         log.info("cadastrando campeão: {}", vobjCampeao);
         return repository.save(vobjCampeao);        
@@ -81,6 +87,7 @@ public class CampeaoController {
     
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
+    @CacheEvict(allEntries = true)
     public void apagar(@PathVariable Long id){
         log.info("Deletando campeão com id: {}", id);
         verificarSeExisteCampeao(id);
@@ -89,6 +96,7 @@ public class CampeaoController {
 
     @PutMapping("{id}")
     @ResponseStatus(OK)
+    @CacheEvict(allEntries = true)
     public Campeao editar(@PathVariable Long id, @RequestBody Campeao campeao){
         log.info("Atualizando campeão com id: {}", id);
         
