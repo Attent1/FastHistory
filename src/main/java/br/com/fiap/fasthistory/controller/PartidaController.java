@@ -37,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PartidaController {
 
-    record TotalPorCampeao(String campeao, Float kda) {
+    record TotalPorCampeao(String campeao, Float kda, int win, Float winRate) {
     }
 
     @Autowired
@@ -50,25 +50,65 @@ public class PartidaController {
         if (campeao != null) {
             return repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
         }
-        
+
         return repository.findAll(pageable);
     }
+
+    // @GetMapping("todos-kda-campeao")
+    // public List<TotalPorCampeao> getKdaPorCampeao() {
+
+    // var partidas = repository.findAll();
+
+    // Map<String, Long> partidasPorCampeao = partidas.stream()
+    // .collect(Collectors.groupingBy(
+    // p -> p.getCampeao().getNome(),
+    // Collectors.counting()
+    // ));
+
+    // Map<String, Double> collect = partidas.stream()
+    // .collect(Collectors.groupingBy(
+    // p -> p.getCampeao().getNome(),
+    // Collectors.summingDouble(p -> ((double)(p.getKill() + p.getAssist())) /
+    // p.getDeath()) // Correção para float
+    // ));
+
+    // return collect
+    // .entrySet()
+    // .stream()
+    // .map(e -> new TotalPorCampeao(e.getKey(), e.getValue().floatValue())) //
+    // Converter para float
+    // .collect(Collectors.toList());
+    // }
 
     @GetMapping("todos-kda-campeao")
     public List<TotalPorCampeao> getKdaPorCampeao() {
 
         var partidas = repository.findAll();
 
-        Map<String, Double> collect = partidas.stream()
+        Map<String, Long> partidasPorCampeao = partidas.stream()
                 .collect(Collectors.groupingBy(
                         p -> p.getCampeao().getNome(),
-                        Collectors.summingDouble(p -> ((double)(p.getKill() + p.getAssist())) / p.getDeath()) // Correção para float
-                ));
+                        Collectors.counting()));
 
-        return collect
-                .entrySet()
-                .stream()
-                .map(e -> new TotalPorCampeao(e.getKey(), e.getValue().floatValue())) // Converter para float
+        Map<String, Double> kdaPorCampeao = partidas.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getCampeao().getNome(),
+                        Collectors.summingDouble(p -> ((double) (p.getKill() + p.getAssist())) / p.getDeath())));
+
+        Map<String, Long> vitoriasPorCampeao = partidas.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getCampeao().getNome(),
+                        Collectors.summingLong(p -> p.getResultado().equalsIgnoreCase("VITÓRIA") ? 1L : 0L)));
+
+        return partidasPorCampeao.entrySet().stream()
+                .map(entry -> {
+                    float winRate = (float) vitoriasPorCampeao.getOrDefault(entry.getKey(), 0L) / entry.getValue();
+                    return new TotalPorCampeao(
+                            entry.getKey(),
+                            kdaPorCampeao.get(entry.getKey()).floatValue(),
+                            vitoriasPorCampeao.get(entry.getKey()).intValue(),
+                            winRate * 100);
+                })
                 .collect(Collectors.toList());
     }
 
