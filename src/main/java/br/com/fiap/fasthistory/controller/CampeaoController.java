@@ -26,6 +26,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.fasthistory.model.Campeao;
 import br.com.fiap.fasthistory.repository.CampeaoRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("campeao")
 @Slf4j
 @CacheConfig(cacheNames = "campeoes")
+@Tag(name = "campeoes", description = "Endpoint relacionados com campeões")
 public class CampeaoController {
     
     @Autowired // CDI Injeção de Dependência
@@ -40,6 +45,8 @@ public class CampeaoController {
  
     @GetMapping   
     @Cacheable
+    @Operation(summary = "Lista todas os campeões cadastrados no sistema.", 
+    description = "Endpoint que retorna um array de objetos do tipo campeao com todas as campeões do usuário atual")
     public List<Campeao> listarTodos(){        
         return repository.findAll();
     }
@@ -47,6 +54,10 @@ public class CampeaoController {
     @PostMapping
     @ResponseStatus(CREATED)
     @CacheEvict(allEntries = true)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Erro de validação do campeao"),
+            @ApiResponse(responseCode = "201", description = "Campeão cadastrado com sucesso")
+    })
     public Campeao cadastrar(@RequestBody @Valid Campeao vobjCampeao){        
         log.info("cadastrando campeão: {}", vobjCampeao);
         return repository.save(vobjCampeao);        

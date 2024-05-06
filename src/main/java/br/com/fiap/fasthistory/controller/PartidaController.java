@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -29,12 +30,17 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.fiap.fasthistory.model.Partida;
 import br.com.fiap.fasthistory.repository.PartidaRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("partida")
 @Slf4j
+@Tag(name = "partidas", description = "Endpoint relacionados com partidas")
 public class PartidaController {
 
     record TotalPorCampeao(String campeao, Float kda, int win, Float winRate) {
@@ -44,7 +50,10 @@ public class PartidaController {
     PartidaRepository repository;
 
     @GetMapping
+    @Operation(summary = "Lista todas as partidas cadastradas no sistema.", 
+    description = "Endpoint que retorna um array de objetos do tipo partida com todas as partidas do usuário atual")
     public Page<Partida> listarTodos(@RequestParam(required = false) String campeao,
+            @ParameterObject
             @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
 
         if (campeao != null) {
@@ -114,6 +123,10 @@ public class PartidaController {
 
     @PostMapping
     @ResponseStatus(CREATED)
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Erro de validação da partida"),
+            @ApiResponse(responseCode = "201", description = "Partida cadastrada com sucesso")
+    })
     public Partida create(@RequestBody @Valid Partida partida) {
         Float kda;
         kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();
