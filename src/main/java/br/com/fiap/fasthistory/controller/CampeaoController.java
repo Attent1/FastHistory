@@ -54,6 +54,7 @@ public class CampeaoController {
     @PostMapping
     @ResponseStatus(CREATED)
     @CacheEvict(allEntries = true)
+    @Operation(summary = "Cria um novo campeão.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "400", description = "Erro de validação do campeao"),
             @ApiResponse(responseCode = "201", description = "Campeão cadastrado com sucesso")
@@ -63,12 +64,14 @@ public class CampeaoController {
         return repository.save(vobjCampeao);        
     }
     
-    @GetMapping("/nome/{nomeCampeao}")   
+    @GetMapping("/nome/{nomeCampeao}")
+    @Operation(summary = "Retorna o id do campeão pelo nome.")   
     public String getIdCampeao(@PathVariable String nomeCampeao){                
         return repository.getIdCampeao(nomeCampeao);
     }
 
     @GetMapping("{id}")
+    @Operation(summary = "Retorna um campeão pelo id.")   
     public ResponseEntity<Campeao> get(@PathVariable Long id){
         log.info("Buscando campeão com id: {}", id);
         
@@ -99,6 +102,7 @@ public class CampeaoController {
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
     @CacheEvict(allEntries = true)
+    @Operation(summary = "Deleta um campeão pelo id.")   
     public void apagar(@PathVariable Long id){
         log.info("Deletando campeão com id: {}", id);
         verificarSeExisteCampeao(id);
@@ -108,6 +112,7 @@ public class CampeaoController {
     @PutMapping("{id}")
     @ResponseStatus(OK)
     @CacheEvict(allEntries = true)
+    @Operation(summary = "Atualiza um campeão pelo id.")   
     public Campeao editar(@PathVariable Long id, @RequestBody Campeao campeao){
         log.info("Atualizando campeão com id: {}", id);
         

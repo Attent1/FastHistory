@@ -90,6 +90,8 @@ public class PartidaController {
     // }
 
     @GetMapping("todos-kda-campeao")
+    @Operation(summary = "Lista um resumo geral de cada campeão.", 
+    description = "Endpoint que retorna um array do tipo TotalPorCampeao que contém o KDA, quantidade de vitórias e o winrate de um campeão")
     public List<TotalPorCampeao> getKdaPorCampeao() {
 
         var partidas = repository.findAll();
@@ -123,6 +125,7 @@ public class PartidaController {
 
     @PostMapping
     @ResponseStatus(CREATED)
+    @Operation(summary = "Cria uma nova partida.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "400", description = "Erro de validação da partida"),
             @ApiResponse(responseCode = "201", description = "Partida cadastrada com sucesso")
@@ -135,6 +138,7 @@ public class PartidaController {
     }
 
     @GetMapping("{id}")
+    @Operation(summary = "Retorna uma partida pelo ID.")
     public ResponseEntity<Partida> get(@PathVariable Long id) {
         return repository
                 .findById(id)
@@ -144,6 +148,7 @@ public class PartidaController {
 
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
+    @Operation(summary = "Deleta uma partida pelo ID.")
     public void apagar(@PathVariable Long id) {
         log.info("Deletando partida com id: {}", id);
         verificarSeExistePartida(id);
@@ -152,6 +157,7 @@ public class PartidaController {
 
     @PutMapping("{id}")
     @ResponseStatus(OK)
+    @Operation(summary = "Atualiza uma partida pelo ID.")
     public Partida editar(@PathVariable Long id, @RequestBody Partida partida) {
         log.info("Atualizando partida com id: {}", id);
         verificarSeExistePartida(id);
