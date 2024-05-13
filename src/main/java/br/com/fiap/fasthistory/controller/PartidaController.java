@@ -15,6 +15,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.data.web.PagedResourcesAssembler;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,18 +52,26 @@ public class PartidaController {
     @Autowired
     PartidaRepository repository;
 
-    @GetMapping
-    @Operation(summary = "Lista todas as partidas cadastradas no sistema.", 
-    description = "Endpoint que retorna um array de objetos do tipo partida com todas as partidas do usuário atual")
-    public Page<Partida> listarTodos(@RequestParam(required = false) String campeao,
-            @ParameterObject
-            @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
+    @Autowired
+    PagedResourcesAssembler<Partida> pageAssembler;
 
+    @GetMapping
+    @Operation(summary = "Lista todas as partidas cadastradas no sistema.", description = "Endpoint que retorna um array de objetos do tipo partida com todas as partidas do usuário atual")
+    public PagedModel<EntityModel<Partida>> listarTodos(@RequestParam(required = false) String campeao,
+            @ParameterObject @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
+
+        Page<Partida> page = null;
+    
         if (campeao != null) {
-            return repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
+            page = repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
+        }
+        if (page == null) {
+            page = repository.findAll(pageable);            
         }
 
-        return repository.findAll(pageable);
+        return pageAssembler.toModel(page, Partida::toEntityModel);
+
+        //return page.map(m -> m.toEntityModel());
     }
 
     // @GetMapping("todos-kda-campeao")
@@ -90,8 +101,7 @@ public class PartidaController {
     // }
 
     @GetMapping("todos-kda-campeao")
-    @Operation(summary = "Lista um resumo geral de cada campeão.", 
-    description = "Endpoint que retorna um array do tipo TotalPorCampeao que contém o KDA, quantidade de vitórias e o winrate de um campeão")
+    @Operation(summary = "Lista um resumo geral de cada campeão.", description = "Endpoint que retorna um array do tipo TotalPorCampeao que contém o KDA, quantidade de vitórias e o winrate de um campeão")
     public List<TotalPorCampeao> getKdaPorCampeao() {
 
         var partidas = repository.findAll();
@@ -130,29 +140,50 @@ public class PartidaController {
             @ApiResponse(responseCode = "400", description = "Erro de validação da partida"),
             @ApiResponse(responseCode = "201", description = "Partida cadastrada com sucesso")
     })
-    public Partida create(@RequestBody @Valid Partida partida) {
+    public ResponseEntity<Partida> create(@RequestBody @Valid Partida partida) {
         Float kda;
         kda = (partida.getKill() + partida.getAssist()) / partida.getDeath();
         partida.setKda(kda);
-        return repository.save(partida);
+        repository.save(partida);
+        return ResponseEntity.created(
+                	partida
+                    .toEntityModel()
+                    .getLink("self")
+                    .get()
+                    .toUri()).body(partida);
     }
+
+    // @GetMapping("{id}")
+    // @Operation(summary = "Retorna uma partida pelo ID.")
+    // public ResponseEntity<Partida> get(@PathVariable Long id) {
+    // var partida = repository
+    // .findById(id)
+    // .map(ResponseEntity::ok)
+    // .orElse(ResponseEntity.notFound().build());
+
+    // return partida;
+    // }
 
     @GetMapping("{id}")
     @Operation(summary = "Retorna uma partida pelo ID.")
-    public ResponseEntity<Partida> get(@PathVariable Long id) {
-        return repository
-                .findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public EntityModel<Partida> get(@PathVariable Long id) {
+        var partida = repository
+                .findById(id).orElseThrow(
+                        () -> new IllegalArgumentException("Partida não encontrada."));
+
+        return partida.toEntityModel();
+        
     }
 
     @DeleteMapping("{id}")
     @ResponseStatus(NO_CONTENT)
     @Operation(summary = "Deleta uma partida pelo ID.")
-    public void apagar(@PathVariable Long id) {
+    public ResponseEntity<Object> apagar(@PathVariable Long id) {
         log.info("Deletando partida com id: {}", id);
         verificarSeExistePartida(id);
         repository.deleteById(id);
+
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("{id}")
