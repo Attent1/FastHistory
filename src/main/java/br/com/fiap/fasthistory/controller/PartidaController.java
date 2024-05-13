@@ -5,6 +5,7 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.NO_CONTENT;
 import static org.springframework.http.HttpStatus.OK;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -46,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = "partidas", description = "Endpoint relacionados com partidas")
 public class PartidaController {
 
-    record TotalPorCampeao(String campeao, Float kda, int win, Float winRate) {
+    record TotalPorCampeao(String campeao, Float kda, int win, int lose, Float winRate) {
     }
 
     @Autowired
@@ -58,47 +59,19 @@ public class PartidaController {
     @GetMapping
     @Operation(summary = "Lista todas as partidas cadastradas no sistema.", description = "Endpoint que retorna um array de objetos do tipo partida com todas as partidas do usuário atual")
     public PagedModel<EntityModel<Partida>> listarTodos(@RequestParam(required = false) String campeao,
-            @ParameterObject @PageableDefault(size = 5, sort = "campeao.nome", direction = Direction.ASC) Pageable pageable) {
+            @ParameterObject @PageableDefault(size = 5, sort = "dataInclusao", direction = Direction.DESC) Pageable pageable) {
 
         Page<Partida> page = null;
-    
+
         if (campeao != null) {
             page = repository.findByCampeaoNomeIgnoreCase(campeao, pageable);
         }
         if (page == null) {
-            page = repository.findAll(pageable);            
+            page = repository.findAll(pageable);
         }
 
         return pageAssembler.toModel(page, Partida::toEntityModel);
-
-        //return page.map(m -> m.toEntityModel());
     }
-
-    // @GetMapping("todos-kda-campeao")
-    // public List<TotalPorCampeao> getKdaPorCampeao() {
-
-    // var partidas = repository.findAll();
-
-    // Map<String, Long> partidasPorCampeao = partidas.stream()
-    // .collect(Collectors.groupingBy(
-    // p -> p.getCampeao().getNome(),
-    // Collectors.counting()
-    // ));
-
-    // Map<String, Double> collect = partidas.stream()
-    // .collect(Collectors.groupingBy(
-    // p -> p.getCampeao().getNome(),
-    // Collectors.summingDouble(p -> ((double)(p.getKill() + p.getAssist())) /
-    // p.getDeath()) // Correção para float
-    // ));
-
-    // return collect
-    // .entrySet()
-    // .stream()
-    // .map(e -> new TotalPorCampeao(e.getKey(), e.getValue().floatValue())) //
-    // Converter para float
-    // .collect(Collectors.toList());
-    // }
 
     @GetMapping("todos-kda-campeao")
     @Operation(summary = "Lista um resumo geral de cada campeão.", description = "Endpoint que retorna um array do tipo TotalPorCampeao que contém o KDA, quantidade de vitórias e o winrate de um campeão")
@@ -121,6 +94,11 @@ public class PartidaController {
                         p -> p.getCampeao().getNome(),
                         Collectors.summingLong(p -> p.getResultado().equalsIgnoreCase("VITÓRIA") ? 1L : 0L)));
 
+        Map<String, Long> derrotasPorCampeao = partidas.stream()
+                .collect(Collectors.groupingBy(
+                        p -> p.getCampeao().getNome(),
+                        Collectors.summingLong(p -> p.getResultado().equalsIgnoreCase("DERROTA") ? 1L : 0L)));
+
         return partidasPorCampeao.entrySet().stream()
                 .map(entry -> {
                     float winRate = (float) vitoriasPorCampeao.getOrDefault(entry.getKey(), 0L) / entry.getValue();
@@ -128,8 +106,9 @@ public class PartidaController {
                             entry.getKey(),
                             kdaPorCampeao.get(entry.getKey()).floatValue(),
                             vitoriasPorCampeao.get(entry.getKey()).intValue(),
+                            derrotasPorCampeao.get(entry.getKey()).intValue(),
                             winRate * 100);
-                })
+                }).sorted(Comparator.comparingDouble(totalPorCampeao -> - totalPorCampeao.winRate))
                 .collect(Collectors.toList());
     }
 
@@ -146,23 +125,13 @@ public class PartidaController {
         partida.setKda(kda);
         repository.save(partida);
         return ResponseEntity.created(
-                	partida
-                    .toEntityModel()
-                    .getLink("self")
-                    .get()
-                    .toUri()).body(partida);
+                partida
+                        .toEntityModel()
+                        .getLink("self")
+                        .get()
+                        .toUri())
+                .body(partida);
     }
-
-    // @GetMapping("{id}")
-    // @Operation(summary = "Retorna uma partida pelo ID.")
-    // public ResponseEntity<Partida> get(@PathVariable Long id) {
-    // var partida = repository
-    // .findById(id)
-    // .map(ResponseEntity::ok)
-    // .orElse(ResponseEntity.notFound().build());
-
-    // return partida;
-    // }
 
     @GetMapping("{id}")
     @Operation(summary = "Retorna uma partida pelo ID.")
@@ -172,7 +141,7 @@ public class PartidaController {
                         () -> new IllegalArgumentException("Partida não encontrada."));
 
         return partida.toEntityModel();
-        
+
     }
 
     @DeleteMapping("{id}")
