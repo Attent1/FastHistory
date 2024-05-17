@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import br.com.fiap.fasthistory.model.Campeao;
 import br.com.fiap.fasthistory.model.Partida;
@@ -14,6 +15,7 @@ import br.com.fiap.fasthistory.repository.CampeaoRepository;
 import br.com.fiap.fasthistory.repository.PartidaRepository;
 
 @Configuration
+@Profile("dev")
 public class DatabaseSeeder implements CommandLineRunner{
 
     @Autowired
